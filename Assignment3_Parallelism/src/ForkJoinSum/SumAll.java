@@ -6,14 +6,18 @@ public class SumAll {
 	static long startTime = 0;
 	
 	private static void tick(){
+
 		startTime = System.currentTimeMillis();
 	}
+
 	private static float tock(){
-		return (System.currentTimeMillis() - startTime) / 1000.0f; 
+	    return (System.currentTimeMillis() - startTime) / 1000.0f;
 	}
+
 	static final ForkJoinPool fjPool = new ForkJoinPool();
+
 	static int sum(int[] arr){
-	  return fjPool.invoke(new SumArray(arr,0,arr.length));
+	    return fjPool.invoke(new SumArray(arr,0,arr.length));
 	}
 
 	

@@ -2,7 +2,7 @@ package ForkJoinSum;
 
 import java.util.concurrent.RecursiveTask;
 
-public class SumArray extends RecursiveTask<Integer>  {
+public class SumArray extends RecursiveTask<Integer>{
 	  int lo; // arguments
 	  int hi;
 	  int[] arr;
