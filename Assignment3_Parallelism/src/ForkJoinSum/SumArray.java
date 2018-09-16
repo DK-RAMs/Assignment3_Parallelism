@@ -14,7 +14,6 @@ public class SumArray extends RecursiveTask<Integer>{
 	    lo=l; hi=h; arr=a;
 	  }
 
-
 	  protected Integer compute(){// return answer - instead of run
 		  if((hi-lo) < SEQUENTIAL_CUTOFF) {
 			  int ans = 0;
