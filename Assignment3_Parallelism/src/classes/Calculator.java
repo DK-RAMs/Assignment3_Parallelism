@@ -1,83 +1,117 @@
 package classes;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.concurrent.*;
 
-public class Calculator extends RecursiveTask<Float>{
+public class Calculator extends RecursiveTask<ArrayList>{
 
-    private float startTime;
-    private Tree[] trees;
-    private float avg;
-    private float[] treesavg;
+    int lo;
+    int hi;
+    static final int SEQUENTIAL_CUTOFF = 1000;
+    private static Tree[] trees;
+    public float[][] Terrain;
+    private String outputfile;
+    private float sumall;
+    private String finalcommit;
 
     private static ForkJoinPool fjPool = new ForkJoinPool();
 
-    private static float sumTreeHrs(Tree tree){
-        return fjPool.invoke(tree);
+
+
+    public Calculator(){
+
     }
 
-
-
-
-    public Calculator(Tree[] trees){
+    public Calculator(Tree[] trees, int lo, int hi, float[][] Terrain){
         this.trees = trees;
-        treesavg = new float[trees.length];
+        this.lo = lo;
+        this.hi = hi;
+        this.Terrain = Terrain;
+
     }
 
-    private void startTimer(){
-        startTime = System.currentTimeMillis();
-    }
 
 
-    public float seriesCalculate(String filename){
-            String finalcommit = "";
-            float averageall = 0;
-            startTimer();
-            for (int i = 0; i < trees.length; i++){
-                averageall += trees[i].sum(0);
-                finalcommit = finalcommit + trees[i].sum(0) + "\n";
+    public ArrayList<Float> seriesCalculate(){
+            //String finalcommit = "";
+            //float endTime;
+            //float averageall = 0;
+            ArrayList<Float> treeans = new ArrayList<>();
+            //System.out.println(System.currentTimeMillis());
+            for(int i = 0; i < trees.length; i++){
+                //averageall += trees[i].sum(0, Terrain);
+                treeans.add(trees[i].sum(0));
+                treeans.trimToSize();
+                //finalcommit = finalcommit + trees[i].sum(0, Terrain) + "\n";
             }
-            float endTime = System.currentTimeMillis();
+            /*endTime = System.currentTimeMillis();
+            totalTime -= (endTime - startTime);
             averageall = averageall / trees.length;
         try{
             String firstall = averageall + "\n" + trees.length + "\n";
-            FileWriter writefile = new FileWriter(filename, true);
-            writefile.write(firstall);
-            writefile.write(finalcommit);
-            writefile.close();
+            File file = new File(outputfile);
+            FileWriter writefile = new FileWriter(file, true);
+            BufferedWriter written = new BufferedWriter(writefile);
+            written.write(firstall);
+            written.write(finalcommit);
+            written.close();
         }
         catch(IOException ioe){
             ioe.printStackTrace();
         }
-        finally{
-            return endTime - startTime / 1000.0f;
-        }
+        finally{*/
+            return treeans;
+        //}
     }
 
-    public float parallelCalculate(String filename){
-        String finalcommit = "";
-        float averageall = 0;
-        startTime = System.currentTimeMillis();
-        compute();
 
-        try{
-            FileWriter writer = new FileWriter(filename);
-
-        }
-        catch(IOException ioe){
-
-        }
-        finally {
-            float endTime = System.currentTimeMillis();
-            return endTime - startTime / 1000.0f;
-        }
-    }
 
     @Override
-    protected Float compute() {
+    protected ArrayList compute() {
+        if(hi - lo <= SEQUENTIAL_CUTOFF){
+            ArrayList treevals = new ArrayList();
+            //long endTime = 0;
+            //startTimer();
+            for(int i = lo; i < hi; i++){
+                treevals.add(fjPool.invoke(trees[i]));
+                //finalcommit = finalcommit + trees[i].sum(0, Terrain) + "\n";
+            }
+            //endTime = System.currentTimeMillis();
+            //totalTime = endTime;
+            treevals.trimToSize();
+            return treevals;
+        }
+        else{
+            Calculator calcright = new Calculator(trees, (lo + hi)/2, hi, Terrain);
+            Calculator calcleft = new Calculator(trees, lo, (lo+hi)/2, Terrain);
 
-        return null;
+            calcleft.fork();
+            ArrayList rightans = calcright.compute();
+            ArrayList leftans = calcleft.join();
+            rightans.trimToSize();
+            leftans.trimToSize();
+
+            leftans.addAll(rightans);
+
+            leftans.trimToSize();
+            /*
+            try{
+                FileWriter writefile = new FileWriter(outputfile, true);
+                BufferedWriter writer = new BufferedWriter(writefile);
+                if(calcleft.sumall + calcright.sumall > 0) {
+                    writer.write(Float.toString(calcleft.sumall + calcright.sumall / trees.length) + "\n" + trees.length + "\n");
+                    writer.write(calcleft.finalcommit + "\n" + calcright.finalcommit);
+                }
+                writer.close();
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+            finally{*/
+            return leftans;
+            //}
+        }
+
     }
 }
